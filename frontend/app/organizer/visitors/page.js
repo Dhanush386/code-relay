@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation'
 import axios from 'axios'
 import Toast from '../../../components/Toast'
 import ConfirmDialog from '../../../components/ConfirmDialog'
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+import { API_URL } from '@/app/config'
 
 export default function VisitorsPage() {
     const router = useRouter()

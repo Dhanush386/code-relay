@@ -3,9 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import axios from 'axios'
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+import { API_URL } from '@/app/config'
 
 export default function OrganizerLogin() {
     const router = useRouter()
@@ -31,7 +29,16 @@ export default function OrganizerLogin() {
                 router.push('/organizer/dashboard')
             }
         } catch (err) {
-            setError(err.response?.data?.error || 'An error occurred')
+            console.error('--- Organizer Auth Error ---');
+            console.error('URL:', `${API_URL}${endpoint}`);
+            console.error('Error Code:', err.code);
+            console.error('Full Error:', err);
+
+            if (err.code === 'ERR_NETWORK') {
+                setError('Connection error: Backend unreachable. Check console logs.');
+            } else {
+                setError(err.response?.data?.error || 'An error occurred during login.');
+            }
         } finally {
             setLoading(false)
         }

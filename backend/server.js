@@ -22,8 +22,18 @@ app.get('/health', (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ error: 'Something went wrong!', message: err.message });
+    console.error(`[Error] ${req.method} ${req.path}`);
+    console.error(err);
+
+    if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+        return res.status(400).json({ error: 'Invalid JSON payload received' });
+    }
+
+    res.status(500).json({
+        error: 'Something went wrong!',
+        message: err.message,
+        path: req.path
+    });
 });
 
 // Start server

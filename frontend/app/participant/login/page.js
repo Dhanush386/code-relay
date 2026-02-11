@@ -3,8 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+import { API_URL } from '@/app/config'
 
 export default function ParticipantLogin() {
     const router = useRouter()
@@ -33,7 +32,16 @@ export default function ParticipantLogin() {
                 router.push('/participant/dashboard')
             }
         } catch (error) {
-            alert(error.response?.data?.error || 'Authentication failed')
+            console.error('--- Participant Auth Error ---');
+            console.error('URL:', `${API_URL}${endpoint}`);
+            console.error('Error Code:', error.code);
+            console.error('Full Error:', error);
+
+            if (error.code === 'ERR_NETWORK') {
+                alert('Connection error: The backend server might be down or unreachable. Check your internet and API URL.');
+            } else {
+                alert(error.response?.data?.error || 'Authentication failed. Please check console for details.');
+            }
         } finally {
             setLoading(false)
         }

@@ -7,8 +7,7 @@ import CodeEditor from '../../../components/CodeEditor'
 import Toast from '../../../components/Toast'
 import ConfirmDialog from '../../../components/ConfirmDialog'
 import ResizableLayout from '../../../components/ResizableLayout'
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+import { API_URL } from '@/app/config'
 
 function getDefaultCode(language) {
     switch (language) {

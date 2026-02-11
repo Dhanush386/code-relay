@@ -4,8 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
 import Link from 'next/link'
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+import { API_URL } from '@/app/config'
 
 export default function OrganizerRegister() {
     const router = useRouter()
