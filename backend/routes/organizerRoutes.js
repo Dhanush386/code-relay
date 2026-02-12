@@ -857,59 +857,51 @@ router.get('/visitors', authenticateOrganizer, async (req, res) => {
     try {
         const organizerId = parseInt(req.organizerId);
 
-        // Find all exams for this organizer with their assignments
+        // Find all exams for this organizer with their joined participants
         const exams = await prisma.exam.findMany({
             where: { organizerId },
             include: {
-                QuestionAssignment: {
-                    include: {
-                        participant: {
-                            select: {
-                                id: true,
-                                participantId: true,
-                                collegeName: true
-                            }
-                        },
-                        question: {
-                            select: {
-                                id: true,
-                                title: true
-                            }
-                        }
+                participants: {
+                    select: {
+                        id: true,
+                        participantId: true,
+                        collegeName: true,
+                        createdAt: true
+                    }
+                },
+                questions: {
+                    select: {
+                        id: true,
+                        title: true
                     }
                 }
             }
         });
 
-        // Get all submission counts for these participants/questions in one go to avoid N+1
-        const allAssignments = exams.flatMap(e => e.QuestionAssignment || []);
+        const visitors = [];
 
-        // We can optimize this by getting counts grouped by participantId/questionId if possible,
-        // but for now let's just use Promise.all to run them in parallel for better speed.
-        const visitors = await Promise.all(allAssignments.map(async (assignment) => {
-            const submissionsCount = await prisma.submission.count({
-                where: {
-                    participantId: assignment.participantId,
-                    questionId: assignment.questionId
-                }
-            });
+        for (const exam of exams) {
+            for (const participant of exam.participants) {
+                // Get submission count for this participant across all questions in this exam
+                const submissionsCount = await prisma.submission.count({
+                    where: {
+                        participantId: participant.id,
+                        questionId: { in: exam.questions.map(q => q.id) }
+                    }
+                });
 
-            // Find which exam this assignment belongs to
-            const exam = exams.find(e => e.QuestionAssignment.some(a => a.id === assignment.id));
-
-            return {
-                participantId: assignment.participant?.id || assignment.participantId,
-                teamName: assignment.participant?.participantId || 'Unknown',
-                collegeName: assignment.participant?.collegeName || 'N/A',
-                examId: exam?.id,
-                examTitle: exam?.title || 'Unknown Exam',
-                assignedQuestionId: assignment.questionId,
-                assignedQuestionTitle: assignment.question?.title || 'No Question Assigned',
-                submissionsCount,
-                joinedAt: assignment.joinedAt || assignment.assignedAt,
-                status: submissionsCount > 0 ? 'Active' : 'Visitor'
-            };
-        }));
+                visitors.push({
+                    participantId: participant.id,
+                    teamName: participant.participantId,
+                    collegeName: participant.collegeName || 'N/A',
+                    examId: exam.id,
+                    examTitle: exam.title,
+                    submissionsCount,
+                    joinedAt: participant.createdAt, // This is when they joined the platform, not necessarily the exam
+                    status: submissionsCount > 0 ? 'Active' : 'Visitor'
+                });
+            }
+        }
 
         res.json({ visitors });
     } catch (error) {

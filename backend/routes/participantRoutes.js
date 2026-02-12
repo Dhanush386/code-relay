@@ -441,13 +441,13 @@ router.get('/questions', authenticateParticipant, async (req, res) => {
         };
 
         const rng = seededRandom(seedStr);
-        const shuffledQuestions = [...questions];
-        for (let i = shuffledQuestions.length - 1; i > 0; i--) {
+        const finalShuffled = [...questions];
+        for (let i = finalShuffled.length - 1; i > 0; i--) {
             const j = Math.floor(rng() * (i + 1));
-            [shuffledQuestions[i], shuffledQuestions[j]] = [shuffledQuestions[j], shuffledQuestions[i]];
+            [finalShuffled[i], finalShuffled[j]] = [finalShuffled[j], finalShuffled[i]];
         }
 
-        res.json({ questions: shuffledQuestions });
+        res.json({ questions: finalShuffled });
     } catch (error) {
         console.error('Fetch questions error:', error);
         res.status(500).json({ error: 'Failed to fetch questions' });
