@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: piston-api
+    runtime: image
+    image:
+      url: ghcr.io/engineer-man/piston:latest
+    envVars:
+      - key: PISTON_LOG_LEVEL
+        value: INFO
+    disk:
+      name: piston-packages
+      mountPath: /piston/packages
+      sizeGB: 10
+    # Free tier compatible - adjust if needed
+    plan: free
+    # Health check endpoint
+    healthCheckPath: /api/v2/piston/runtimes

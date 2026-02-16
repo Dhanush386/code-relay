@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  piston:
+    image: ghcr.io/engineer-man/piston
+    container_name: piston_api
+    restart: unless-stopped
+    ports:
+      - "2000:2000"
+    volumes:
+      - piston_packages:/piston/packages
+    environment:
+      - PISTON_LOG_LEVEL=INFO
+      - PISTON_REPO_URL=https://github.com/engineer-man/piston
+    # Optional: Limit resources
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+
+volumes:
+  piston_packages:
+    driver: local
